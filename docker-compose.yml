@@ -1,0 +1,22 @@
+version: '3'
+services:
+  solr:
+    image: vulhub/solr:7.0.1
+    ports:
+      - "8983:8983"
+      - "5005:5005"
+    volumes:
+      - shared_data:/etc  # Shared volume with flag injector
+
+  flag_injector:
+    image: alpine:latest
+    volumes:
+      - shared_data:/solr_etc  # Shared with Solr
+      - /etc/flag:/flag:ro    # Mount host flag file (readonly)
+    entrypoint: ["/bin/sh", "-c", "echo \"this_hash_is_your_flag: $(cat /flag)\" >> /solr_etc/passwd"]
+    depends_on:
+      - solr
+    restart: "no"
+
+volumes:
+  shared_data:
